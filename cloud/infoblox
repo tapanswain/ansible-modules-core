@@ -47,7 +47,7 @@ def add_host_alias(self, host_fqdn, alias_fqdn):
  
 Lastly 
  
-You need to pass  below default parameter  from your playbook . You can check  /etc/ansible/inventory/group_vars/infoblox_jnpr for more info
+You need to pass  below default parameter  from your playbook . 
  
 infoblox_gridmaster: <infoblox servername>
 infoblox_username:
