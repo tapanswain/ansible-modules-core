@@ -69,12 +69,6 @@ import json
 import os
 import urllib3
 urllib3.disable_warnings()
-ca_certs = "/etc/ssl/certs/ca-certificates.crt"  # Or wherever it lives.
-
-http = urllib3.PoolManager(
-    cert_reqs='CERT_REQUIRED', # Force certificate check.
-    ca_certs=ca_certs,         # Path to your certificate bundle.
-)
 class InfobloxNotFoundException(Exception):
     pass
 
