@@ -1,7 +1,4 @@
 #!/usr/bin/python
-#
-# Copyright 2014 "Igor Feoktistov" <ifeoktistov@yahoo.com>
-#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -13,6 +10,57 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+DOCUMENTATION = '''
+module: infoblox
+version_added: "1.0"
+short_description: Manage infoblox opeartion 
+There are  4 states to call infoblox module.
+1)when state is present (default).It call get_network function to lookup hostname .
+def get_network(self, network, fields=None): 
+2)when state is add , it create host_record .
+       def create_host_record(self, address, fqdn):  
+ 
+a)You need to pass  ipadress(address) and  hostname (fqdn) from playbook.
+b)  If you pass  address as  network i.e. 10.209.194.0/23 , it will call  get_next_available_ip function and you will get non pinging ip.
+……….
+if re.match("^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+$", address):— > if it network, it will call get_next_available_ip funcation.
+ 
+            ipv4addr =  self.get_next_available_ip(address)
+            ipv4addr = str(ipv4addr)
+            print ipv4addr
+………
+def get_next_available_ip(self,network): 
+………
+                           for i in range(len(ip_v4)):
+                           ip_v4 = r_json['ips'][i]
+                           response = os.system("ping -c 1 -w2 " + ip_v4 + " > /dev/null 2>&1")
+                           if response != 0: ———> non pinging ip
+                              print ip_v4,'free and down’
+                              return ip_v4  —> return ip to main function
+……………
+3)  when state is delete ,it calls delete_host_record with fqdn parameter .
+ 
+def delete_host_record(self, fqdn):
+ 
+4)  when state  is alias , it calls add_host_alias funcaton with host_fqdn  and  alias_fqdn parameter .
+def add_host_alias(self, host_fqdn, alias_fqdn):
+ 
+Lastly 
+ 
+You need to pass  below default parameter  from your playbook . You can check  /etc/ansible/inventory/group_vars/infoblox_jnpr for more info
+ 
+infoblox_gridmaster: <infoblox servername>
+infoblox_username:
+infoblox_version: 1.4.2—> this version number is  very important
+infoblox_view: <view>
+infoblox_network_view: default
+infoblox_ssl: False
+infoblox_password:
+
+
+'''
+
+
 
 import re
 import requests
@@ -68,14 +116,14 @@ class Infoblox(object):
 	"""
 	rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/network?network=' + network + '&network_view=' + self.iba_network_view
 	try:
-	    r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
+	    r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=False)
 	    r_json = r.json()
 	    if r.status_code == 200:
 		if len(r_json) > 0:
 		    net_ref = r_json[0]['_ref']
                     #Changed the num 1 to 10 for gettting 10 free ips 
 		    rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/' + net_ref + '?_function=next_available_ip&num='+number
-		    r = requests.post(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
+		    r = requests.post(url=rest_url, auth=(self.iba_user, self.iba_password), verify=False)
 		    r_json = r.json()
 		    if r.status_code == 200 :
 			ip_v4 = r_json['ips']
@@ -137,14 +185,14 @@ class Infoblox(object):
         """
         rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/network?network=' + network + '&network_view=' + self.iba_network_view
         try:
-            r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
+            r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=False)
             r_json = r.json()
             if r.status_code == 200:
                 if len(r_json) > 0:
                     net_ref = r_json[0]['_ref']
                     #Changed the num 1 to 10 for gettting 10 free ips 
                     rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/' + net_ref + '?_function=next_available_ip&num=5'
-                    r = requests.post(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
+                    r = requests.post(url=rest_url, auth=(self.iba_user, self.iba_password), verify=False)
                     r_json = r.json()
                     if r.status_code == 200:
                         ip_v4 = r_json['ips']
