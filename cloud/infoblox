@@ -309,7 +309,7 @@ class Infoblox(object):
 def main():
     module = AnsibleModule(
         argument_spec = dict(
-	    state = dict(default='present'),
+	    state = dict(required=True),
             iba_user = dict(required=True),
 	    iba_ipaddr = dict(required=True),
             iba_password = dict(required=True),
@@ -327,11 +327,9 @@ def main():
     fqdn = module.params['fqdn']
     address = module.params['address']
     infbl = Infoblox(module.params['iba_ipaddr'], module.params['iba_user'], module.params['iba_password'], module.params['iba_wapi_version'], module.params['iba_dns_view'], module.params['iba_network_view'], module.params['iba_verify_ssl']);
-    if state == 'present':
-        infbl.get_host_by_search(fqdn)
-    elif state == 'add':
-    	 infbl.create_host_record(address,fqdn)
-    elif state == 'delete':
+    if state == 'absent':
+        infbl.create_host_record(address,fqdn)
+    elif state == 'present':
     	 infbl.delete_host_record(fqdn)
     else:
         module.fail_json(msg="The state must be 'absent' or 'present' but instead we found '%s'" % (state))
