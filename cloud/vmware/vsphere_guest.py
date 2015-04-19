@@ -566,6 +566,8 @@ def reconfigure_vm(vsphere_client, vm, module, esxi, resource_pool, cluster_name
     memoryHotAddEnabled = bool(vm.properties.config.memoryHotAddEnabled)
     cpuHotAddEnabled = bool(vm.properties.config.cpuHotAddEnabled)
     cpuHotRemoveEnabled = bool(vm.properties.config.cpuHotRemoveEnabled)
+    config_target = vsphere_client._proxy.QueryConfigTarget(request)._returnval
+
 
     # Change Memory
     if vm_hardware['memory_mb']:
@@ -627,6 +629,9 @@ def reconfigure_vm(vsphere_client, vm, module, esxi, resource_pool, cluster_name
             spec.set_element_numCPUs(int(vm_hardware['num_cpus']))
 
             changes['cpu'] = vm_hardware['num_cpus']
+    if vm_hardware['addnewdisk']:
+        #add_disk(module, vsphere_client, config_target, config,devices, datastore, disktype, disksize, disk_ctrl_key,disk_num, disk_key)
+        add_disk(module, s, config_target, config, devices, datastore, type="thin", size=200000, disk_ctrl_key=1, disk_number=0, key=0)
 
     if len(changes):
 
